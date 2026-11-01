@@ -11,6 +11,10 @@ from dataclasses import dataclass
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VT_DIR = os.path.join(ROOT, "pub", "villager_tower")
 
+# How the newsletter's creator is credited on the site. (She described
+# herself in the final issue as its "editor, creator and owner".)
+EDITOR = "Ricki Yvonne Schultz"
+
 MONTHS = ["January", "February", "March", "April", "May", "June", "July",
           "August", "September", "October", "November", "December"]
 MON_RE = "|".join(MONTHS)

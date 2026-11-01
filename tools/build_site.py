@@ -116,9 +116,12 @@ def build_villager_tower(issues):
   <img src="/logo.jpg" alt="Villager Tower masthead: a grain elevator" width="300">
   <div>
     <h1>Villager Tower</h1>
-    <p class="lede">The community newsletter of Carver, Minnesota:
-    {len(dated)} issues from {e(first.short)} {first.year} to {e(last.short)} {last.year}.
-    It began as the <em>Carver Gazette</em> and became the <em>Villager Tower</em> in 1988.</p>
+    <p class="lede">For more than forty years, <strong>{e(catalog.EDITOR)}</strong> wrote, edited
+    and published Carver’s community newsletter: {len(dated)} issues from {e(first.short.split("–")[0])}
+    {first.year} to {e(last.short.split("–")[-1])} {last.year}. It began as the <em>Carver Gazette</em> and
+    became the <em>Villager Tower</em> in 1988.</p>
+    <p>Printed and distributed to downtown businesses and the post office, it had many local
+    readers, as well as Carver expats across the state and country.</p>
     <p class="note">Looking for a name or topic?
     <a href="{e(SEARCH_URL)}">Search every issue</a> at the Internet Archive.</p>
   </div>
@@ -269,8 +272,9 @@ newsletter, and the books and stories that tell its history.</p>
     <h2><a href="/pub/villager_tower/">Villager Tower</a></h2>
     <a class="more" href="/pub/villager_tower/">All {len(dated)} issues →</a>
   </div>
-  <p>City council and township news, local events, and the people of Carver, published from
-  {dated[0].year} to {dated[-1].year}.</p>
+  <p>For more than forty years, <strong>{e(catalog.EDITOR)}</strong> wrote, edited and published
+  Carver’s community newsletter, keeping the town informed about city council and township
+  news, local events, and its people.</p>
   <ol class="timeline">{"".join(fronts)}</ol>
 </section>
 
