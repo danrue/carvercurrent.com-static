@@ -166,12 +166,6 @@ def banner(cls, title, sub):
 
 
 def build_history():
-    for d in catalog.HISTORY:
-        if d.local:
-            dst = os.path.join(OUT, d.local)
-            os.makedirs(os.path.dirname(dst), exist_ok=True)
-            shutil.copy2(os.path.join(ROOT, d.local), dst)
-
     books = "".join(f"""
 <article class="book">
   <a href="{e(d.url)}" class="cover"><img src="{e(d.cover)}" alt="Cover of {e(d.title)}" width="200"></a>
@@ -182,23 +176,12 @@ def build_history():
   </div>
 </article>""" for d in catalog.BOOKS)
 
-    editions = "".join(f"""
-<li><a href="{e(d.url)}"><img src="{e(d.cover)}" alt="" width="160"><span>{e(d.short)}</span></a></li>"""
-                       for d in catalog.DISTRICT)
-
     links = "".join(f'<li><a href="{e(u)}">{e(t)}</a></li>' for t, u in catalog.LINKS)
 
     body = f"""
 <section class="hist">
   <h2>Books</h2>
   {books}
-</section>
-
-<section class="hist">
-  <h2>Carver Historic District</h2>
-  <p>Guides to the historic homes and businesses of downtown Carver, which is listed on the
-  National Register of Historic Places.</p>
-  <ul class="editions">{editions}</ul>
 </section>
 
 <section class="hist">
@@ -270,7 +253,7 @@ def build_home(issues):
   <span class="cap">{caption or e(f"#{num}, {month}")}</span></a></li>""")
 
     shelf = [(d.url, d.cover, d.title, f"{d.author} · {d.note}" if d.author else d.note)
-             for d in catalog.BOOKS + catalog.DISTRICT[:1]]
+             for d in catalog.BOOKS]
     shelf.append(("/dr-william-a-griffin-house/", "/img/griffin/400-oak-after.jpg",
                   "Dr. William A. Griffin House", "2012 Heritage Preservation Award"))
     shelf_html = "".join(f"""<li><a href="{e(u)}">

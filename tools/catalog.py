@@ -106,8 +106,6 @@ class Doc:
     url: str           # where the site links to (the PDF itself)
     cover: str = ""    # site image path
     blurb: str = ""    # HTML
-    local: str = ""    # repo path, if the file is served directly by Pages
-    short: str = ""    # label in the side-by-side editions row
 
 
 HISTORIC_CARVER_PDF = ("https://archive.org/download/historic-carver-on-the-minnesota-river/"
@@ -131,24 +129,11 @@ BOOKS = [
         "Carver County sheriffs."),
 ]
 
-# Carver Historic District guides: small enough to serve directly from Pages.
-DISTRICT = [
-    Doc("Carver Historic District — 2016 Update", "John von Walter", "2016",
-        "/pub/history/Carver_Historic_District_2016.pdf", "/img/covers/district-2016.jpg",
-        local="pub/history/Carver_Historic_District_2016.pdf", short="2016 Update"),
-    Doc("Historic Homes and Businesses in Carver — Dakota Uprising Sesquicentennial Update",
-        "", "2012",
-        "/pub/history/Carver_Historic_District_2012.pdf", "/img/covers/district-2012.jpg",
-        local="pub/history/Carver_Historic_District_2012.pdf",
-        short="2012 Dakota Uprising Sesquicentennial Update"),
-    Doc("Historic Homes and Businesses in Carver — Civil War Onset Sesquicentennial Update",
-        "", "2011",
-        "/pub/history/Carver_Historic_District_2011.pdf", "/img/covers/district-2011.jpg",
-        local="pub/history/Carver_Historic_District_2011.pdf",
-        short="2011 Civil War Onset Sesquicentennial Update"),
-]
-
-HISTORY = BOOKS + DISTRICT
+# The Carver Historic District guides (2011, 2012, 2016 editions, in
+# pub/history/) were drafts of Historic Carver on the Minnesota River, which
+# contains 82-88% of their text. They stay in the repo but aren't listed;
+# their old URLs redirect to the book.
+HISTORY = BOOKS
 
 # Elsewhere on the web.
 LINKS = [
@@ -159,8 +144,10 @@ LINKS = [
 
 # Old URLs that aren't files we serve, mapped to their new home.
 EXTRA_REDIRECTS = {
-    # 2010 was always a symlink to the 2011 edition
-    "/pub/history/Carver_Historic_District_2010.pdf": "/pub/history/Carver_Historic_District_2011.pdf",
+    "/pub/history/Carver_Historic_District_2010.pdf": HISTORIC_CARVER_PDF,
+    "/pub/history/Carver_Historic_District_2011.pdf": HISTORIC_CARVER_PDF,
+    "/pub/history/Carver_Historic_District_2012.pdf": HISTORIC_CARVER_PDF,
+    "/pub/history/Carver_Historic_District_2016.pdf": HISTORIC_CARVER_PDF,
     "/pub/history/Historic_Carver.pdf": HISTORIC_CARVER_PDF,
     "/pub/history/The_Sheriffs_of_Carver_County.pdf": SHERIFFS_PDF,
 }
