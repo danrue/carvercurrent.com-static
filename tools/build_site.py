@@ -10,6 +10,7 @@ redirects them to the matching archive.org file.
 import html
 import json
 import os
+import posixpath
 import re
 import shutil
 import sys
@@ -22,11 +23,6 @@ ROOT = catalog.ROOT
 OUT = os.path.join(ROOT, "_site")
 SITE_SRC = os.path.join(ROOT, "site")
 e = html.escape
-# Path prefix the site is served under: "" on its own domain, or
-# "/carvercurrent.com-static" at danrue.github.io/carvercurrent.com-static/.
-# Set by the Pages workflow; links below are written root-relative and
-# prefixed in write().
-BASE = os.environ.get("BASE_PATH", "").rstrip("/")
 SEARCH_URL = "https://archive.org/search?query=subject%3A%22Villager+Tower%22&sort=date"
 
 
@@ -57,9 +53,24 @@ def page(title, body, desc="", head=""):
 """
 
 
-def write(path, text):
-    if BASE:
-        text = re.sub(r'(href|src)="/(?!/)', rf'\1="{BASE}/', text)
+def relativize(path, text):
+    """Rewrite root-relative links ("/pub/...") relative to the page at `path`,
+    so the site works at any URL prefix (its own domain, github.io/<repo>/,
+    or straight from disk)."""
+    here = posixpath.dirname(path)
+
+    def rel(m):
+        target = m.group(2)
+        r = posixpath.relpath(target, here)
+        if target.endswith("/"):
+            r = "./" if r == "." else r + "/"
+        return f'{m.group(1)}="{r}"'
+    return re.sub(r'(href|src)="(/(?!/)[^"]*)"', rel, text)
+
+
+def write(path, text, relative=True):
+    if relative:
+        text = relativize(path, text)
     full = os.path.join(OUT, path.lstrip("/"))
     os.makedirs(os.path.dirname(full), exist_ok=True)
     with open(full, "w") as f:
@@ -173,28 +184,46 @@ def build_home(issues):
 def build_404(issues):
     redirects = {i.old_path: i.download_url for i in issues}
     redirects.update(catalog.EXTRA_REDIRECTS)
-    redirects = {BASE + k: (BASE + v if v.startswith("/") else v) for k, v in redirects.items()}
-    # Runs in <head>, before anything renders: a known old URL goes straight to
-    # its new home and the visitor never sees this page. (GitHub Pages can't
-    # send a real HTTP redirect, so the status is still 404 for non-browsers.)
+    # GitHub serves this page for any missing URL, at any depth, so relative
+    # links can't work here. Instead: match old URLs on their /pub/... part,
+    # work out the site's prefix from the URL, and inline the stylesheet.
+    #
+    # The redirect runs in <head>, before anything renders: a known old URL
+    # goes straight to its new home and the visitor never sees this page.
+    # (GitHub Pages can't send a real HTTP redirect, so the status is still
+    # 404 for non-browsers.)
+    css = open(os.path.join(SITE_SRC, "style.css")).read()
     head = f"""<script>
-(function () {{
+var BASE = (function () {{
   var R = {json.dumps(redirects, separators=(",", ":"))};
   var p = decodeURIComponent(location.pathname).replace(/\\/+$/, '');
-  if (R[p]) {{
+  var i = p.indexOf('/pub/');
+  var base = i >= 0 ? p.slice(0, i)
+           : /\\.github\\.io$/.test(location.hostname) ? '/' + p.split('/')[1] : '';
+  var to = R[i >= 0 ? p.slice(i) : p];
+  if (to) {{
     document.documentElement.className = 'redirecting';
-    location.replace(R[p]);
+    location.replace(to.charAt(0) === '/' ? base + to : to);
   }}
+  return base;
 }})();
 </script>
-<style>.redirecting body {{ visibility: hidden; }}</style>
+<style>.redirecting body {{ visibility: hidden; }}
+{css}</style>
 """
     body = """
 <h1>Page not found</h1>
 <p>That page isn’t here. Try the <a href="/pub/villager_tower/">Villager Tower archive</a>
 or the <a href="/">home page</a>.</p>
+<script>
+document.querySelectorAll('a[href^="/"]').forEach(function (a) {
+  a.setAttribute('href', BASE + a.getAttribute('href'));
+});
+</script>
 """
-    write("/404.html", page("Carver Current", body, head=head))
+    html404 = page("Carver Current", body, head=head).replace(
+        '<link rel="stylesheet" href="/style.css">', "")
+    write("/404.html", html404, relative=False)
 
 
 def main():
