@@ -44,9 +44,19 @@ def page(title, body, desc="", head="", banner=""):
 {banner}<main>
 {body}
 </main>
-<footer>
-  <p>Carver, Minnesota. Documents are hosted by the
-  <a href="https://archive.org/">Internet Archive</a>.</p>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="f-brand">
+      <a href="/" class="brand">Carver Current</a>
+      <p>Community News and Views<br>Carver, Minnesota</p>
+    </div>
+    <nav class="f-nav" aria-label="Footer">
+      <a href="/pub/villager_tower/">Villager Tower</a>
+      <a href="/pub/history/">Local History</a>
+    </nav>
+    <p class="f-note">Newsletters and books are preserved at the
+    <a href="https://archive.org/details/@mndrue">Internet Archive</a>, where they can be read and searched online.</p>
+  </div>
 </footer>
 </body>
 </html>

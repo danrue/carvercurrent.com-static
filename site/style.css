@@ -6,6 +6,9 @@
   --accent: #8a3b12;
   --accent-ink: #fff;
   --card: #fffdf8;
+  --foot-bg: #2f2a23;
+  --foot-ink: #f3ece0;
+  --foot-muted: #bfb3a2;
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
@@ -17,6 +20,9 @@
     --accent: #e0915f;
     --accent-ink: #1c1915;
     --card: #24201b;
+    --foot-bg: #12100d;
+    --foot-ink: #ece4d6;
+    --foot-muted: #a99d8c;
   }
   :root:not([data-theme="light"]) .hero img, :root:not([data-theme="light"]) .feature img { filter: invert(1) sepia(.3); mix-blend-mode: screen; }
 }
@@ -32,7 +38,7 @@ body {
 a { color: var(--accent); text-underline-offset: 2px; }
 a:hover { text-decoration-thickness: 2px; }
 
-.masthead, main, footer { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+.masthead, main, .footer-inner { max-width: 960px; margin: 0 auto; padding: 0 16px; }
 .masthead {
   display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; justify-content: space-between;
   padding-top: 18px; padding-bottom: 12px; border-bottom: 3px double var(--rule);
@@ -43,6 +49,10 @@ a:hover { text-decoration-thickness: 2px; }
 .masthead nav a:hover { color: var(--accent); }
 
 main { padding-top: 24px; padding-bottom: 48px; }
+/* Keep the footer at the bottom of the window on short pages. */
+body { min-height: 100vh; display: flex; flex-direction: column; }
+.masthead, main, .footer-inner { width: 100%; }
+main { flex: 1 0 auto; }
 h1 { font-size: 2.4rem; line-height: 1.1; margin: 0 0 .4em; }
 h2 { font-size: 1.35rem; margin: 1.6em 0 .5em; }
 .lede { font-size: 1.15rem; color: var(--muted); max-width: 40em; }
@@ -118,7 +128,22 @@ ul.docs li { padding: 12px 0; border-bottom: 1px solid var(--rule); }
 ul.docs a { font-size: 1.15rem; }
 .by, .when { color: var(--muted); font-size: .95rem; }
 
-footer { border-top: 3px double var(--rule); padding-top: 12px; padding-bottom: 32px; color: var(--muted); font-size: .9rem; }
+.site-footer { background: var(--foot-bg); color: var(--foot-muted); margin-top: 32px; }
+.footer-inner {
+  display: grid; grid-template-columns: 1.2fr 1fr 1.6fr; gap: 24px 40px; align-items: start;
+  padding-top: 36px; padding-bottom: 40px; font-size: .95rem;
+}
+.site-footer a { color: var(--foot-ink); }
+.site-footer .brand { color: var(--foot-ink); font-size: 1.3rem; }
+.f-brand p { margin: 6px 0 0; font-variant: small-caps; letter-spacing: .05em; line-height: 1.4; }
+.f-nav { display: flex; flex-direction: column; gap: 8px; }
+.f-nav a { text-decoration: none; font-variant: small-caps; letter-spacing: .05em; font-size: 1.05rem; }
+.f-nav a:hover { text-decoration: underline; }
+.f-note { margin: 0; line-height: 1.5; }
+@media (max-width: 700px) {
+  .footer-inner { grid-template-columns: 1fr; gap: 20px; }
+  .f-nav { flex-direction: row; gap: 20px; }
+}
 
 /* Local History */
 .hist { margin-bottom: 44px; }
