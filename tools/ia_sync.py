@@ -22,7 +22,8 @@ import urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import catalog  # noqa: E402
 
-PAUSE = 60          # seconds between uploads
+PAUSE = 60          # starting seconds between uploads (grows after rejections)
+MAX_PAUSE = 10 * 60
 BACKOFF = 15 * 60   # seconds to wait after a rate/spam rejection
 MAX_BACKOFFS = 8
 
@@ -88,24 +89,26 @@ def main():
     if args.check or not todo:
         return
 
-    backoffs = 0
+    backoffs, pause = 0, PAUSE
     for n, (i, path) in enumerate(todo, 1):
         while True:
             ok, throttled, last = upload(i, path)
             if ok:
                 print(f"uploaded {n}/{len(todo)} {i.identifier}", flush=True)
+                backoffs = 0
                 break
             if throttled and backoffs < MAX_BACKOFFS:
                 backoffs += 1
+                pause = min(pause * 2, MAX_PAUSE)
                 print(f"throttled on {i.identifier}; waiting {BACKOFF // 60} min "
-                      f"(backoff {backoffs}/{MAX_BACKOFFS})", flush=True)
+                      f"(backoff {backoffs}/{MAX_BACKOFFS}); pace now {pause}s", flush=True)
                 time.sleep(BACKOFF)
                 continue
             print(f"FAILED {i.identifier}: {last}", flush=True)
             if throttled:
                 sys.exit("giving up: archive.org keeps rejecting uploads")
             break
-        time.sleep(PAUSE)
+        time.sleep(pause)
     print("done; re-run with --check to verify", flush=True)
 
 
