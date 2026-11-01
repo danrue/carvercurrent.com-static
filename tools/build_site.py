@@ -34,6 +34,9 @@ def page(title, body, desc="", head="", banner=""):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 {head}<link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -46,16 +49,18 @@ def page(title, body, desc="", head="", banner=""):
 </main>
 <footer class="site-footer">
   <div class="footer-inner">
-    <div class="f-brand">
+    <div class="f-top">
       <a href="/" class="brand">Carver Current</a>
-      <p>Community News and Views<br>Carver, Minnesota</p>
+      <nav class="f-nav" aria-label="Footer">
+        <a href="/pub/villager_tower/">Villager Tower</a>
+        <a href="/pub/history/">Local History</a>
+      </nav>
     </div>
-    <nav class="f-nav" aria-label="Footer">
-      <a href="/pub/villager_tower/">Villager Tower</a>
-      <a href="/pub/history/">Local History</a>
-    </nav>
-    <p class="f-note">Newsletters and books are preserved at the
-    <a href="https://archive.org/details/@mndrue">Internet Archive</a>, where they can be read and searched online.</p>
+    <div class="f-bottom">
+      <p>Newsletters and books are preserved at the
+      <a href="https://archive.org/details/@mndrue">Internet Archive</a>.</p>
+      <p>Since 2010</p>
+    </div>
   </div>
 </footer>
 </body>
