@@ -26,7 +26,7 @@ e = html.escape
 SEARCH_URL = "https://archive.org/search?query=subject%3A%22Villager+Tower%22&sort=date"
 
 
-def page(title, body, desc="", head=""):
+def page(title, body, desc="", head="", banner=""):
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -41,7 +41,7 @@ def page(title, body, desc="", head=""):
   <a href="/" class="brand">Carver Current</a>
   <nav><a href="/pub/villager_tower/">Villager Tower</a><a href="/pub/history/">Local History</a></nav>
 </header>
-<main>
+{banner}<main>
 {body}
 </main>
 <footer>
@@ -139,40 +139,161 @@ f.addEventListener('input', () => {{
           page("Villager Tower", body, "Every issue of Carver, Minnesota's community newsletter, 1983–2024."))
 
 
-def build_history():
+def docs_list():
     items = []
     for d in catalog.HISTORY:
         by = f'<span class="by">{e(d.author)}</span> · ' if d.author else ""
         items.append(f'<li><a href="{e(d.url)}">{e(d.title)}</a><br>'
                      f'{by}<span class="when">{e(d.note)}</span></li>')
+    return f'<ul class="docs">{"".join(items)}</ul>'
+
+
+def banner(cls, title, sub):
+    return f"""<section class="banner {cls}">
+  <div class="banner-text">
+    <h1>{title}</h1>
+    <p>{sub}</p>
+  </div>
+</section>
+"""
+
+
+def build_history():
+    for d in catalog.HISTORY:
         if d.local:
             dst = os.path.join(OUT, d.local)
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             shutil.copy2(os.path.join(ROOT, d.local), dst)
+
+    books = "".join(f"""
+<article class="book">
+  <a href="{e(d.url)}" class="cover"><img src="{e(d.cover)}" alt="Cover of {e(d.title)}" width="200"></a>
+  <div>
+    <h3><a href="{e(d.url)}">{e(d.title)}</a></h3>
+    <p class="meta">{e(d.author)} · {e(d.note)}</p>
+    <p>{d.blurb}</p>
+  </div>
+</article>""" for d in catalog.BOOKS)
+
+    editions = "".join(f"""
+<li><a href="{e(d.url)}"><img src="{e(d.cover)}" alt="" width="160"><span>{e(d.short)}</span></a></li>"""
+                       for d in catalog.DISTRICT)
+
+    links = "".join(f'<li><a href="{e(u)}">{e(t)}</a></li>' for t, u in catalog.LINKS)
+
     body = f"""
-<h1>Local History</h1>
-<ul class="docs">{"".join(items)}</ul>
+<section class="hist">
+  <h2>Books</h2>
+  {books}
+</section>
+
+<section class="hist">
+  <h2>Carver Historic District</h2>
+  <p>Guides to the historic homes and businesses of downtown Carver, which is listed on the
+  National Register of Historic Places.</p>
+  <ul class="editions">{editions}</ul>
+</section>
+
+<section class="hist">
+  <h2>Heritage Preservation</h2>
+  <article class="story">
+    <a href="/dr-william-a-griffin-house/" class="thumb"><img src="/img/griffin/400-oak-after.jpg" alt="The restored Dr. William A. Griffin House" width="240"></a>
+    <div>
+      <h3><a href="/dr-william-a-griffin-house/">Dr. William A. Griffin House</a></h3>
+      <p class="meta">2012 Carver Heritage Preservation Award</p>
+      <p>The restoration of the circa 1858 home of Carver County’s first practicing physician,
+      at 400 Oak Street. Story and photographs by John von Walter.</p>
+    </div>
+  </article>
+</section>
+
+<section class="hist">
+  <h2>More Carver history</h2>
+  <ul class="links">{links}</ul>
+</section>
 """
-    write("/pub/history/index.html", page("Local History", body, "Histories of Carver, Minnesota."))
+    write("/pub/history/index.html",
+          page("Local History", body, "Histories of Carver, Minnesota.",
+               banner=banner("main-street", "Local History", "Carver on the Minnesota River")))
+
+    with open(os.path.join(ROOT, "pages", "dr-william-a-griffin-house.html")) as f:
+        article = f.read()
+    write("/dr-william-a-griffin-house/index.html",
+          page("Dr. William A. Griffin House", f'<article class="prose">{article}</article>',
+               "2012 Carver Heritage Preservation Award: the Dr. William A. Griffin House."))
+
+
+def build_page_redirects():
+    for old, new in catalog.PAGE_REDIRECTS.items():
+        path = old + "index.html"
+        target = posixpath.relpath(new, posixpath.dirname(path)) + "/"
+        write(path, f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Carver Current</title>
+<meta http-equiv="refresh" content="0; url={target}">
+<link rel="canonical" href="{target}">
+<script>location.replace({json.dumps(target)} + location.hash);</script>
+</head><body><p><a href="{target}">Continue</a></p></body></html>
+""", relative=False)
+
+
+# Front pages shown on the home page: (issue number, caption).
+TIMELINE = [
+    ("1", "The first <em>Carver Gazette</em>"),
+    ("51", "Renamed <em>Villager Tower</em>"),
+    ("100", "Issue one hundred"),
+    ("173", ""),
+    ("268", ""),
+    ("408", "The final issue"),
+]
 
 
 def build_home(issues):
-    latest = [i for i in issues if i.number][-6:][::-1]
+    dated = [i for i in issues if i.year]
+    by_num = {i.number: i for i in issues if i.number}
+    top = banner("tracks", "Carver Current", "Community News and Views — Carver, Minnesota")
+
+    fronts = []
+    for num, caption in TIMELINE:
+        i = by_num[num]
+        month = i.short.split("–")[0].split(" ")[0]
+        fronts.append(f"""<li><a href="{e(i.download_url)}">
+  <img src="/img/issues/{int(num):03d}.jpg" alt="Front page of {e(i.title)}" width="220" loading="lazy">
+  <span class="yr">{e(i.year)}</span>
+  <span class="cap">{caption or e(f"#{num}, {month}")}</span></a></li>""")
+
+    shelf = [(d.url, d.cover, d.title, f"{d.author} · {d.note}" if d.author else d.note)
+             for d in catalog.BOOKS + catalog.DISTRICT[:1]]
+    shelf.append(("/dr-william-a-griffin-house/", "/img/griffin/400-oak-after.jpg",
+                  "Dr. William A. Griffin House", "2012 Heritage Preservation Award"))
+    shelf_html = "".join(f"""<li><a href="{e(u)}">
+  <span class="img"><img src="{e(c)}" alt="" loading="lazy"></span>
+  <span class="t">{e(t)}</span><span class="m">{e(m)}</span></a></li>""" for u, c, t, m in shelf)
+
     body = f"""
-<section class="hero">
-  <img src="/logo.jpg" alt="Villager Tower masthead: a grain elevator" width="300">
-  <div>
-    <h1>Carver Current</h1>
-    <p class="lede">An archive for Carver, Minnesota: forty years of the
-    <em>Villager Tower</em> community newsletter, and histories of the town.</p>
-    <p><a class="button" href="/pub/villager_tower/">Browse the Villager Tower</a>
-    <a class="button secondary" href="/pub/history/">Local History</a></p>
+<p class="intro">An archive for Carver, Minnesota: forty years of the town’s community
+newsletter, and the books and stories that tell its history.</p>
+
+<section class="home-section">
+  <div class="section-head">
+    <h2><a href="/pub/villager_tower/">Villager Tower</a></h2>
+    <a class="more" href="/pub/villager_tower/">All {len(dated)} issues →</a>
   </div>
+  <p>City council and township news, local events, and the people of Carver, published from
+  {dated[0].year} to {dated[-1].year}.</p>
+  <ol class="timeline">{"".join(fronts)}</ol>
 </section>
-<h2>Final issues</h2>
-<ul class="issues">{"".join(issue_li(i, with_year=True) for i in latest)}</ul>
+
+<section class="home-section">
+  <div class="section-head">
+    <h2><a href="/pub/history/">Local History</a></h2>
+    <a class="more" href="/pub/history/">More local history →</a>
+  </div>
+  <ul class="shelf">{shelf_html}</ul>
+</section>
 """
-    write("/index.html", page("Carver Current", body, "An archive for Carver, Minnesota."))
+    write("/index.html", page("Carver Current", body,
+                              "Community News and Views — Carver, Minnesota.", banner=top))
     write("/pub/index.html", page("Archive", """
 <h1>Archive</h1>
 <ul class="docs">
@@ -229,12 +350,12 @@ document.querySelectorAll('a[href^="/"]').forEach(function (a) {
 def main():
     shutil.rmtree(OUT, ignore_errors=True)
     os.makedirs(OUT)
-    for f in os.listdir(SITE_SRC):
-        shutil.copy2(os.path.join(SITE_SRC, f), OUT)
+    shutil.copytree(SITE_SRC, OUT, dirs_exist_ok=True)
     issues = catalog.issues()
     build_home(issues)
     build_villager_tower(issues)
     build_history()
+    build_page_redirects()
     build_404(issues)
     size = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(OUT) for f in fs)
     print(f"built {OUT}: {len(issues)} issues, {size / 1e6:.1f} MB")

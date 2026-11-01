@@ -103,42 +103,61 @@ def issues():
 
 @dataclass
 class Doc:
-    old_path: str      # path on the old nginx site, or None
     title: str
     author: str
     note: str
     url: str           # where the site links to (the PDF itself)
+    cover: str = ""    # site image path
+    blurb: str = ""    # HTML
     local: str = ""    # repo path, if the file is served directly by Pages
-    online: str = ""   # archive.org reader page, if any
+    short: str = ""    # label in the side-by-side editions row
 
 
 HISTORIC_CARVER_PDF = ("https://archive.org/download/historic-carver-on-the-minnesota-river/"
                        "Historic%20Carver%20On%20the%20Minnesota.pdf")
+SHERIFFS_PDF = ("https://archive.org/download/the-sheriffs-of-carver-county/"
+                "The_Sheriffs_of_Carver_County.pdf")
 
-# Other publications. Large ones live on archive.org; small ones are served
-# directly from Pages (they're a few MB each).
-HISTORY = [
-    Doc("/pub/history/Historic_Carver.pdf",
-        "Historic Carver on the Minnesota River", "John von Walter", "2024",
-        HISTORIC_CARVER_PDF, online="https://archive.org/details/historic-carver-on-the-minnesota-river"),
-    Doc(None,
-        "The Sheriffs of Carver County", "John von Walter", "2005",
-        "https://archive.org/download/the-sheriffs-of-carver-county/The_Sheriffs_of_Carver_County.pdf",
-        online="https://archive.org/details/the-sheriffs-of-carver-county"),
-    Doc("/pub/history/Carver_Historic_District_2016.pdf",
-        "Carver Historic District — 2016 Update", "John von Walter", "2016",
-        "/pub/history/Carver_Historic_District_2016.pdf",
-        "pub/history/Carver_Historic_District_2016.pdf"),
-    Doc("/pub/history/Carver_Historic_District_2012.pdf",
-        "Historic Homes and Businesses in Carver — Dakota Uprising Sesquicentennial Update",
+# Books by John von Walter, hosted on archive.org.
+BOOKS = [
+    Doc("Historic Carver on the Minnesota River", "John von Walter", "2024",
+        HISTORIC_CARVER_PDF, "/img/covers/historic-carver.jpg",
+        "John von Walter spent 10 to 15 years documenting the history of the city of "
+        "Carver. Printed copies are available from the "
+        '<a href="https://www.carvercountyhistoricalsociety.org/">Carver County Historical '
+        "Society</a> in Waconia, with proceeds split between the Society and the non-profit "
+        "Carver-on-the-Minnesota, under whose umbrella the work was made. The digital "
+        "edition is dedicated to the public domain."),
+    Doc("The Sheriffs of Carver County", "John von Walter", "2005",
+        SHERIFFS_PDF, "/img/covers/sheriffs.jpg",
+        "<em>The First 150 Years: 1855–2005.</em> A history of a century and a half of "
+        "Carver County sheriffs."),
+]
+
+# Carver Historic District guides: small enough to serve directly from Pages.
+DISTRICT = [
+    Doc("Carver Historic District — 2016 Update", "John von Walter", "2016",
+        "/pub/history/Carver_Historic_District_2016.pdf", "/img/covers/district-2016.jpg",
+        local="pub/history/Carver_Historic_District_2016.pdf", short="2016 Update"),
+    Doc("Historic Homes and Businesses in Carver — Dakota Uprising Sesquicentennial Update",
         "", "2012",
-        "/pub/history/Carver_Historic_District_2012.pdf",
-        "pub/history/Carver_Historic_District_2012.pdf"),
-    Doc("/pub/history/Carver_Historic_District_2011.pdf",
-        "Historic Homes and Businesses in Carver — Civil War Onset Sesquicentennial Update",
+        "/pub/history/Carver_Historic_District_2012.pdf", "/img/covers/district-2012.jpg",
+        local="pub/history/Carver_Historic_District_2012.pdf",
+        short="2012 Dakota Uprising Sesquicentennial Update"),
+    Doc("Historic Homes and Businesses in Carver — Civil War Onset Sesquicentennial Update",
         "", "2011",
-        "/pub/history/Carver_Historic_District_2011.pdf",
-        "pub/history/Carver_Historic_District_2011.pdf"),
+        "/pub/history/Carver_Historic_District_2011.pdf", "/img/covers/district-2011.jpg",
+        local="pub/history/Carver_Historic_District_2011.pdf",
+        short="2011 Civil War Onset Sesquicentennial Update"),
+]
+
+HISTORY = BOOKS + DISTRICT
+
+# Elsewhere on the web.
+LINKS = [
+    ("John Marvig: Carver’s historic bridges", "https://johnmarvigbridges.org/Carver.html"),
+    ("Carver County Historical Society", "https://www.carvercountyhistoricalsociety.org/"),
+    ("City of Carver", "https://www.cityofcarver.com/"),
 ]
 
 # Old URLs that aren't files we serve, mapped to their new home.
@@ -146,4 +165,11 @@ EXTRA_REDIRECTS = {
     # 2010 was always a symlink to the 2011 edition
     "/pub/history/Carver_Historic_District_2010.pdf": "/pub/history/Carver_Historic_District_2011.pdf",
     "/pub/history/Historic_Carver.pdf": HISTORIC_CARVER_PDF,
+    "/pub/history/The_Sheriffs_of_Carver_County.pdf": SHERIFFS_PDF,
+}
+
+# Old WordPress pages (no file extension, so these get real redirect pages).
+PAGE_REDIRECTS = {
+    "/carver-history/": "/pub/history/",
+    "/villager-tower/": "/pub/villager_tower/",
 }
