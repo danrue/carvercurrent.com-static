@@ -24,7 +24,11 @@ jobs:
       - uses: actions/checkout@v7
         with:
           lfs: false
+      - id: pages
+        uses: actions/configure-pages@v6
       - run: python3 tools/build_site.py
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site

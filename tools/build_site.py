@@ -10,6 +10,7 @@ redirects them to the matching archive.org file.
 import html
 import json
 import os
+import re
 import shutil
 import sys
 from itertools import groupby
@@ -21,6 +22,11 @@ ROOT = catalog.ROOT
 OUT = os.path.join(ROOT, "_site")
 SITE_SRC = os.path.join(ROOT, "site")
 e = html.escape
+# Path prefix the site is served under: "" on its own domain, or
+# "/carvercurrent.com-static" at danrue.github.io/carvercurrent.com-static/.
+# Set by the Pages workflow; links below are written root-relative and
+# prefixed in write().
+BASE = os.environ.get("BASE_PATH", "").rstrip("/")
 SEARCH_URL = "https://archive.org/search?query=subject%3A%22Villager+Tower%22&sort=date"
 
 
@@ -52,6 +58,8 @@ def page(title, body, desc="", head=""):
 
 
 def write(path, text):
+    if BASE:
+        text = re.sub(r'(href|src)="/(?!/)', rf'\1="{BASE}/', text)
     full = os.path.join(OUT, path.lstrip("/"))
     os.makedirs(os.path.dirname(full), exist_ok=True)
     with open(full, "w") as f:
@@ -165,6 +173,7 @@ def build_home(issues):
 def build_404(issues):
     redirects = {i.old_path: i.download_url for i in issues}
     redirects.update(catalog.EXTRA_REDIRECTS)
+    redirects = {BASE + k: (BASE + v if v.startswith("/") else v) for k, v in redirects.items()}
     # Runs in <head>, before anything renders: a known old URL goes straight to
     # its new home and the visitor never sees this page. (GitHub Pages can't
     # send a real HTTP redirect, so the status is still 404 for non-browsers.)
