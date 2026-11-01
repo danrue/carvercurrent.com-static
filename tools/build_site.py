@@ -95,7 +95,6 @@ def issue_li(i, with_year=False):
 
 def build_villager_tower(issues):
     dated = [i for i in issues if i.year]
-    index = [i for i in issues if not i.year]
     first, last = dated[0], dated[-1]
 
     years = []
@@ -112,8 +111,6 @@ def build_villager_tower(issues):
   </ul>
 </section>""")
 
-    index_link = "".join(f'browse the <a href="{e(i.download_url)}">{e(i.title)}</a> or ' for i in index)
-
     body = f"""
 <section class="hero">
   <img src="/logo.jpg" alt="Villager Tower masthead: a grain elevator" width="300">
@@ -122,8 +119,8 @@ def build_villager_tower(issues):
     <p class="lede">The community newsletter of Carver, Minnesota:
     {len(dated)} issues from {e(first.short)} {first.year} to {e(last.short)} {last.year}.
     It began as the <em>Carver Gazette</em> and became the <em>Villager Tower</em> in 1988.</p>
-    <p class="note">Looking for a name or topic? {index_link[0].upper() + index_link[1:]}<a
-    href="{e(SEARCH_URL)}">search every issue</a> at the Internet Archive.</p>
+    <p class="note">Looking for a name or topic?
+    <a href="{e(SEARCH_URL)}">Search every issue</a> at the Internet Archive.</p>
   </div>
 </section>
 <input type="search" id="filter" placeholder="Filter by year, month or issue number" aria-label="Filter issues">

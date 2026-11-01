@@ -41,8 +41,8 @@ class Issue:
     title: str         # Villager Tower #376, September–October 2021
     short: str         # September–October (for listings)
     masthead: str      # Carver Gazette | Villager Tower
-    number: str        # "376", or "" for specials/index
-    year: str          # "2021", or "" for the index
+    number: str        # "376", or "" for special editions
+    year: str          # "2021"
     date: str          # "2021-09"
 
     @property
@@ -88,9 +88,6 @@ def parse(filename):
         year, name = m.group(1), m.group(2).replace("-", " ")
         return Issue(filename, ident, f"{masthead} Special Edition: {name} ({year})",
                      f"Special Edition: {name}", masthead, "", year, year)
-
-    if stem == "Villager_Tower_Index":
-        return Issue(filename, ident, "Villager Tower Index", "Index", masthead, "", "", "")
 
     raise ValueError(f"unrecognized filename: {filename}")
 
