@@ -68,7 +68,8 @@ def upload(issue, path):
     out = p.stdout + p.stderr
     ok = p.returncode == 0 and "error uploading" not in out
     throttled = "reduce your request rate" in out or "appears to be spam" in out
-    return ok, throttled, out.strip().splitlines()[-1:] if out.strip() else []
+    errors = [l.strip() for l in out.splitlines() if "error uploading" in l]
+    return ok, throttled, errors or out.strip().splitlines()[-1:]
 
 
 def main():
@@ -97,6 +98,8 @@ def main():
                 print(f"uploaded {n}/{len(todo)} {i.identifier}", flush=True)
                 backoffs = 0
                 break
+            for line in last:
+                print(f"  archive.org said: {line}", flush=True)
             if throttled and backoffs < MAX_BACKOFFS:
                 backoffs += 1
                 pause = min(pause * 2, MAX_PAUSE)
